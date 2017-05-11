@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mzb.dao.MzbJnpxUserDao">
+    
+	<sql id="mzbJnpxUserColumns">
+		a.id AS "id",
+		a.mzb_jnpx_main_id AS "mzbJnpxMainId",
+		a.user_id AS "user.id",
+		a.is_done AS "isDone",
+		a.done_date AS "doneDate",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.test1 AS "test1",
+		a.test2 AS "test2",
+		a.test3 AS "test3",
+		a.test4 AS "test4",
+		u3.name AS "user.name",
+		u3.openid AS "user.openid",
+		o.name as "user.office.name"
+	</sql>
+	
+	<sql id="mzbJnpxUserJoins">
+		LEFT JOIN mzb_jnpx_main b ON b.id = a.mzb_jnpx_main_id
+		LEFT JOIN sys_user u3 ON u3.id = a.user_id
+		LEFT JOIN sys_office o  ON o.id = u3.office_id
+
+	</sql>
+    
+	<select id="get" resultType="MzbJnpxUser">
+		SELECT 
+			<include refid="mzbJnpxUserColumns"/>
+		FROM mzb_jnpx_user a
+		<include refid="mzbJnpxUserJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getByMainUserId" parameterType="String" resultType="MzbJnpxUser">
+		SELECT
+		<include refid="mzbJnpxUserColumns"/>
+		FROM mzb_jnpx_user a
+		<include refid="mzbJnpxUserJoins"/>
+		WHERE a.mzb_jnpx_main_id = #{0} and a.user_id = #{1}
+	</select>
+
+	<select id="findList" resultType="MzbJnpxUser">
+		SELECT 
+			<include refid="mzbJnpxUserColumns"/>
+		FROM mzb_jnpx_user a
+		<include refid="mzbJnpxUserJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="mzbJnpxMainId != null and mzbJnpxMainId != ''">
+				AND a.mzb_jnpx_main_id = #{mzbJnpxMainId.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.is_done,a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MzbJnpxUser">
+		SELECT 
+			<include refid="mzbJnpxUserColumns"/>
+		FROM mzb_jnpx_user a
+		<include refid="mzbJnpxUserJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.is_done,a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mzb_jnpx_user(
+			id,
+			mzb_jnpx_main_id,
+			user_id,
+			is_done,
+			done_date,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			test1,
+			test2,
+			test3,
+			test4
+		) VALUES (
+			#{id},
+			#{mzbJnpxMainId.id},
+			#{user.id},
+			#{isDone},
+			#{doneDate},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{test1},
+			#{test2},
+			#{test3},
+			#{test4}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mzb_jnpx_user SET 	
+			is_done = #{isDone},
+			done_date=#{doneDate},
+			test1 = #{test1}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mzb_jnpx_user SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE mzb_jnpx_main_id = #{mzbJnpxMainId.id}
+			</otherwise>
+		</choose>
+	</update>
+
+	<delete id="deleteByMzbJnpxUserId">
+		DELETE FROM mzb_jnpx_user
+		WHERE mzb_jnpx_main_id = #{mzbJnpxMainId}
+	</delete>
+	
+</mapper>

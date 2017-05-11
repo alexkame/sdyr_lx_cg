@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mzb.dao.MzbGongyctDao">
+    
+	<sql id="mzbGongyctColumns">
+		a.id AS "id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.status AS "status",
+		a.title AS "title",
+		a.cash AS "cash",
+		a.summary AS "summary",
+		a.files AS "files",
+		a.test2 AS "test2",
+		a.test3 AS "test3",
+		a.test4 AS "test4",
+		a.test5 AS "test5"
+	</sql>
+	
+	<sql id="mzbGongyctJoins">
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_office o ON o.id = u.office_id
+	</sql>
+    
+	<select id="get" resultType="MzbGongyct">
+		SELECT 
+			<include refid="mzbGongyctColumns"/>
+		FROM mzb_gongyct a
+		<include refid="mzbGongyctJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MzbGongyct">
+		SELECT
+		o.name AS "createBy.office.name",
+		u.name AS "createBy.name",
+			<include refid="mzbGongyctColumns"/>
+		FROM mzb_gongyct a
+		<include refid="mzbGongyctJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND
+			a.status = #{status}
+
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MzbGongyct">
+		SELECT 
+			<include refid="mzbGongyctColumns"/>
+		FROM mzb_gongyct a
+		<include refid="mzbGongyctJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mzb_gongyct(
+			id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			status,
+			title,
+			cash,
+			summary,
+			files,
+			test2,
+			test3,
+			test4,
+			test5
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{status},
+			#{title},
+			#{cash},
+			#{summary},
+			#{files},
+			#{test2},
+			#{test3},
+			#{test4},
+			#{test5}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mzb_gongyct SET 	
+			title = #{title},
+			cash = #{cash},
+			summary = #{summary},
+			files = #{files},
+			status = #{status},
+			remarks= #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mzb_gongyct SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

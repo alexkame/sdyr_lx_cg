@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mzb.dao.MzbJnpxMainDao">
+    
+	<sql id="mzbJnpxMainColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.content AS "content",
+		a.files AS "files",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.status AS "status",
+		a.test2 AS "test2",
+		a.test5 AS "test5"
+	</sql>
+	
+	<sql id="mzbJnpxMainJoins">
+	</sql>
+    
+	<select id="get" resultType="MzbJnpxMain">
+		SELECT 
+			<include refid="mzbJnpxMainColumns"/>
+		FROM mzb_jnpx_main a
+		<include refid="mzbJnpxMainJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MzbJnpxMain">
+		SELECT
+		<!-- 我的通知 -->
+		<if test="test2 != null and test2 != ''">
+			u.is_done AS "test3",
+			u.test1 AS "test4",
+		</if>
+
+			<include refid="mzbJnpxMainColumns"/>
+		FROM mzb_jnpx_main a
+		<include refid="mzbJnpxMainJoins"/>
+		<!-- 我的通知 -->
+		<if test="test2 != null and test2 != ''">
+			JOIN mzb_jnpx_user u ON u.mzb_jnpx_main_id = a.id AND u.user_id = #{test2}
+		</if>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MzbJnpxMain">
+		SELECT 
+			<include refid="mzbJnpxMainColumns"/>
+		FROM mzb_jnpx_main a
+		<include refid="mzbJnpxMainJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mzb_jnpx_main(
+			id,
+			title,
+			content,
+			files,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			status,
+			test2,
+			test3,
+			test4,
+			test5
+		) VALUES (
+			#{id},
+			#{title},
+			#{content},
+			#{files},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{status},
+			#{test2},
+			#{test3},
+			#{test4},
+			#{test5}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mzb_jnpx_main SET 	
+			title = #{title},
+			content = #{content},
+			files = #{files},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			status = #{status}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mzb_jnpx_main SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

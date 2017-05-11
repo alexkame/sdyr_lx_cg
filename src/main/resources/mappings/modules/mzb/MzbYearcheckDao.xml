@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mzb.dao.MzbYearcheckDao">
+    
+	<sql id="mzbYearcheckColumns">
+		a.id AS "id",
+		a.status AS "status",
+		a.files AS "files",
+		a.user_id AS "user.id",
+		a.office_id AS "office.id",
+		a.area_id AS "area.id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+-- 		u2.name AS "user.name",
+-- 		o3.name AS "office.name",
+	</sql>
+	
+	<sql id="mzbYearcheckJoins">
+	</sql>
+    
+	<select id="get" resultType="MzbYearcheck">
+		SELECT
+		o.name AS "createBy.office.name",
+		u.name AS "createBy.name",
+			<include refid="mzbYearcheckColumns"/>
+		FROM mzb_yearcheck a
+		JOIN sys_user u on u.id = a.create_by
+		JOIN sys_office o on o.id = u.office_id
+		<include refid="mzbYearcheckJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MzbYearcheck">
+		SELECT
+		o.name AS "createBy.office.name",
+		u.name AS "createBy.name",
+			<include refid="mzbYearcheckColumns"/>
+		FROM mzb_yearcheck a
+		JOIN sys_user u on u.id = a.create_by
+		JOIN sys_office o on o.id = u.office_id
+		<include refid="mzbYearcheckJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="user != null and user.id != null and user.id != ''">
+				AND a.user_id = #{user.id}
+			</if>
+			<if test="status == '1'.toString() ">
+			 AND YEAR(a.create_date)=YEAR(NOW())
+			</if>
+			<if test="status == '0'.toString() ">
+				AND YEAR(a.create_date) !=YEAR(NOW())
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="MzbYearcheck">
+		SELECT 
+			<include refid="mzbYearcheckColumns"/>
+		FROM mzb_yearcheck a
+		<include refid="mzbYearcheckJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mzb_yearcheck(
+			id,
+			user_id,
+			status,
+			files,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{createBy.id},
+			#{status},
+			#{files},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mzb_yearcheck SET 	
+			files = #{files},
+			remarks = #{remarks},
+			status = #{status}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mzb_yearcheck SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.mzb.dao.MzbUnitinfoDao">
+    
+	<sql id="mzbUnitinfoColumns">
+		a.id AS "id",
+		a.danw_mc AS "danwMc",
+		a.dengjzh AS "dengjzh",
+		a.dengj_rq AS "dengjRq",
+		a.kaib_zj AS "kaibZj",
+		a.zhus AS "zhus",
+		a.danw_dh AS "danwDh",
+		a.fad_dbr AS "fadDbr",
+		a.yewzg_dw AS "yewzgDw",
+		a.zhongz AS "zhongz",
+		a.yew_fw AS "yewFw",
+		a.tongy_dm AS "tongyDm",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.isself AS "isself"
+	</sql>
+	
+	<sql id="mzbUnitinfoJoins">
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_office o ON o.id = u.office_id
+	</sql>
+    
+	<select id="get" resultType="MzbUnitinfo">
+		SELECT 
+			<include refid="mzbUnitinfoColumns"/>
+		FROM mzb_unitinfo a
+		<include refid="mzbUnitinfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MzbUnitinfo">
+		SELECT 
+			<include refid="mzbUnitinfoColumns"/>
+		FROM mzb_unitinfo a
+		<include refid="mzbUnitinfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="danwMc != null and danwMc != ''">
+				AND a.danw_mc LIKE 
+					<if test="dbName == 'oracle'">'%'||#{danwMc}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{danwMc}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{danwMc},'%')</if>
+			</if>
+			<if test="dengjzh != null and dengjzh != ''">
+				AND a.dengjzh LIKE 
+					<if test="dbName == 'oracle'">'%'||#{dengjzh}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{dengjzh}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{dengjzh},'%')</if>
+			</if>
+			<if test="dengjRq != null and dengjRq != ''">
+				AND a.dengj_rq = #{dengjRq}
+			</if>
+			<if test="tongyDm != null and tongyDm != ''">
+				AND a.tongy_dm LIKE 
+					<if test="dbName == 'oracle'">'%'||#{tongyDm}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{tongyDm}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{tongyDm},'%')</if>
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+
+
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MzbUnitinfo">
+		SELECT 
+			<include refid="mzbUnitinfoColumns"/>
+		FROM mzb_unitinfo a
+		<include refid="mzbUnitinfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO mzb_unitinfo(
+			id,
+			danw_mc,
+			dengjzh,
+			dengj_rq,
+			kaib_zj,
+			zhus,
+			danw_dh,
+			fad_dbr,
+			yewzg_dw,
+			zhongz,
+			yew_fw,
+			tongy_dm,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			isself
+		) VALUES (
+			#{id},
+			#{danwMc},
+			#{dengjzh},
+			#{dengjRq},
+			#{kaibZj},
+			#{zhus},
+			#{danwDh},
+			#{fadDbr},
+			#{yewzgDw},
+			#{zhongz},
+			#{yewFw},
+			#{tongyDm},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{isself}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE mzb_unitinfo SET 	
+			danw_mc = #{danwMc},
+			dengjzh = #{dengjzh},
+			dengj_rq = #{dengjRq},
+			kaib_zj = #{kaibZj},
+			zhus = #{zhus},
+			danw_dh = #{danwDh},
+			fad_dbr = #{fadDbr},
+			yewzg_dw = #{yewzgDw},
+			zhongz = #{zhongz},
+			yew_fw = #{yewFw},
+			tongy_dm = #{tongyDm},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			isself = #{isself}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE mzb_unitinfo SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>
